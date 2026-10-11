@@ -1,4 +1,4 @@
-name: Build official Meta IWSDK VR starter
+name: Build Meta IWSDK interaction test
 on:
   push:
     branches: [main]
@@ -18,13 +18,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Generate the official SDK VR project
+      - name: Generate Meta SDK starter
         run: npx --yes @iwsdk/create@latest sdk-app --yes --target vr --grabbing --locomotion --no-physics --no-git --no-install
-      - name: Add preserved model assets
-        run: |
-          mkdir -p sdk-app/public/models
-          cp assets/*.glb sdk-app/public/models/
-      - name: Install SDK and build for GitHub Pages
+      - name: Install dependencies and build
         working-directory: sdk-app
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
@@ -36,11 +32,11 @@ jobs:
         with:
           path: sdk-app/dist
   deploy:
+    runs-on: ubuntu-latest
+    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
